@@ -155,10 +155,20 @@ gapminder %>%
 #the in operator will filter all countries and check to see if the country being searched is in the vector we gave, in this case Canada or Algeria. 
 ```
 
+
 2. Find all entries of Canada, and entries of Algeria occuring in the '60s. 
+```{r}
+gapminder %>% 
+  filter(country =="Canada" | country =="Algeria" & year>= 1960 & year <1970)
+```
 
 
 3. Find all entries _not_ including Canada and Algeria.
+
+```{r}
+gapminder %>%
+  filter(!(country =="Canada"|country == "Algeria") )
+```
 
 # Bonus Exercises
 
