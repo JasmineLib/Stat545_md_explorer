@@ -179,15 +179,15 @@ If there's time remaining, we'll practice with these three exercises. I'll give 
 gapminder %>% 
   filter(continent == "Europe"
          &gdpPercap > 10000) %>% 
-  select(-gdpPercap)
+  select(-gdpPercap) %>% 
+  select(country, continent, year)
 ```
 
 
 2. Take the first three columns, and extract the names.
 
 ```{r}
-
-#not sure how to "extract" names
+#see above. Not sure if this was what was being asked though. 
 ```
 
 
