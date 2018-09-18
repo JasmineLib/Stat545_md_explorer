@@ -175,9 +175,29 @@ gapminder %>%
 If there's time remaining, we'll practice with these three exercises. I'll give you 1 minute for each, then we'll go over the answer.
 
 1. Take all countries in Europe that have a GDP per capita greater than 10000, and select all variables except `gdpPercap`. (Hint: use `-`).
+```{r}
+gapminder %>% 
+  filter(continent == "Europe"
+         &gdpPercap > 10000) %>% 
+  select(-gdpPercap)
+```
+
 
 2. Take the first three columns, and extract the names.
+
+```{r}
+
+#not sure how to "extract" names
+```
+
 
 3. Of the `iris` data frame, take all columns that start with the word "Petal". 
     - Hint: take a look at the "Select helpers" documentation by running the following code: `?tidyselect::select_helpers`.
     - Exercise from [r-exercises](https://www.r-exercises.com/2017/10/19/dplyr-basic-functions-exercises/).
+    
+```{r}
+head(iris)
+iris %>%
+  select(starts_with("Petal"))
+```
+
