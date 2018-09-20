@@ -196,18 +196,28 @@ __Use of boxplot__: Visualize 1-dimensional distributions (of a single numeric v
 
 Let's work up to the concept of a _jitter plot_. As above, let's explore the population for each continent, but using points (again, with the y-axis on a log scale).
 
-Let's hold off on identifying the grammar. 
+Let's hold off on identifying the grammar.
+
+```{r}
+a + geom_point(alpha = 0.1) 
+#alpha is transparancy = 0.1 means 10 points on top of e/o to get an opaque point. This helps a bit in helping see the density of graph.
+```
+
 
 1. Initiate the `ggplot` call to make a scatterplot of `continent` vs `pop`; initiate the log y scale. Store the call in the variable `b`.
 
-
+see above 'a'
 
 2. Add the point geom to `b`. Why is this an ineffective plot?
 
-
+see above
 
 3. A solution is to jitter the points. Add the jitter geom. Re-run the command a few times -- does the plot change? Why?
 
+```{r}
+a + geom_jitter(alpha = 0.25)
+
+```
 
 
 4. How does the grammar differ from a box plot or violin plot?
@@ -215,6 +225,10 @@ Let's hold off on identifying the grammar.
 
 5. We can add multiple geom _layers_ to our plot. Put a jitterplot overtop of the violin plot, starting with our base `b`. Try vice-versa. 
 
+```{r}
+a + geom_violin() + geom_jitter(alpha = 0.1)
+#adding jitter helps you see the number of points. whereas just violin, you don't know how many data points you have. More complete picture of the data. better than pinhead plots (mean + SD) .
+```
 
 
 6. Optional: git stage and commit
@@ -235,21 +249,39 @@ Let's make some time/line plot, starting with Canada's life expectancy over time
 | scale                 |  |
 | statistical transform |  |
 
+skip filling in the grammar here for now...
+
 2. In one readable call, write code that:
     1. Filters the data to Canada only
     2. Pipes the filtered data into `ggplot`
     3. Makes the time plot of `lifeExp` over time
     4. Also displays the points
 
+```{r}
+#can either pipe then store into a new variable, or just pipe it into ggplot. 
+gapminder %>% 
+  filter(country == "Canada") %>% 
+  ggplot(aes(year, lifeExp)) +
+  geom_line() + 
+  geom_point()
+
+#geom line connects dots from left to right, even if order is different. 
+#when you start using ggplot in piping, you need to use + not %>% 
+```
 
 
 3. Attempt to overlay line plots for all countries. That is, repeat the above code, but don't filter. What's wrong here?
 
+```{r}
+c = ggplot(gapminder, aes(year, lifeExp))
+c + geom_line() #this alone doesnt give what we want. so we add the following aes:
+c + geom_line(aes(group = country), alpha = 0.2)
+```
 
 
 4. Use the `group` aesthetic to fix the problem.
 
-
+see above.
 
 5. Optional: git stage and commit
 
