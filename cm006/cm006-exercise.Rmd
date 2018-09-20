@@ -43,7 +43,7 @@ ggplot(gapminder, aes(x=lifeExp, y=gdpPercap)) + geom_point()
 
 3. Add the missing component as a _layer_.
 
-
+--> The added layer is the +geom_point() and was added in part 2. 
 
 Notice the "metaprogramming" again!
 
@@ -54,6 +54,7 @@ Notice the "metaprogramming" again!
 ```{r}
 ggplot(gapminder, x=lifeExp, y=gdpPercap) + geom_point()
 #this will give an error. need aes function with minimal x and y data. can also change colour etc here, but not needed.
+
 ggplot(gapminder, aes(x=lifeExp, y=gdpPercap)) + geom_point()
 
 ```
@@ -62,10 +63,20 @@ ggplot(gapminder, aes(x=lifeExp, y=gdpPercap)) + geom_point()
 5. Put the x-axis on a log scale, first by transforming the x variable. 
     - Note: `ggplot2` does some data wrangling and computations itself! We don't always have to modify the data frame.
 
+```{r}
+ggplot(gapminder, aes(x=lifeExp, y=log(gdpPercap))) + geom_point() #first arg for aes are automatically x and y unless you specify. x= y=
+
+```
 
 
 6. Try again, this time by changing the _scale_ (this way is better).
 
+```{r}
+ggplot(gapminder, aes(x=lifeExp, y=gdpPercap)) +
+  geom_point() +
+  scale_y_log10()
+
+```
 
 
 7. The aesthetic mappings can be specified on the geom layer if you want, instead of the main `ggplot` call. Give it a try:
