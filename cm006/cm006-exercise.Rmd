@@ -1,6 +1,6 @@
 ---
 title: "cm006 Exercises: Exploring Geometric Objects"
-output: html_notebook
+output: github_document
 editor_options: 
   chunk_output_type: inline
 ---
