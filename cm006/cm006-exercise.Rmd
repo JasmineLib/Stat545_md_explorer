@@ -52,7 +52,7 @@ Notice the "metaprogramming" again!
 4. You _must_ remember to put the aesthetic mappings in the `aes` function! What happens if you forget?
 
 ```{r}
-ggplot(gapminder, x=lifeExp, y=gdpPercap) + geom_point()
+#ggplot(gapminder, x=lifeExp, y=gdpPercap) + geom_point()
 #this will give an error. need aes function with minimal x and y data. can also change colour etc here, but not needed.
 
 ggplot(gapminder, aes(x=lifeExp, y=gdpPercap)) + geom_point()

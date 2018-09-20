@@ -22,7 +22,19 @@ library(tidyverse) #load tidyverse in which ggplot2 is found
 
 ``` r
 library(gapminder) #load gapminder data
+head(gapminder
+     )
 ```
+
+    ## # A tibble: 6 x 6
+    ##   country     continent  year lifeExp      pop gdpPercap
+    ##   <fctr>      <fctr>    <int>   <dbl>    <int>     <dbl>
+    ## 1 Afghanistan Asia       1952    28.8  8425333       779
+    ## 2 Afghanistan Asia       1957    30.3  9240934       821
+    ## 3 Afghanistan Asia       1962    32.0 10267083       853
+    ## 4 Afghanistan Asia       1967    34.0 11537966       836
+    ## 5 Afghanistan Asia       1972    36.1 13079460       740
+    ## 6 Afghanistan Asia       1977    38.4 14880372       786
 
 Scatterplot
 -----------
@@ -32,31 +44,65 @@ Let's look at a *scatterplot* of `gdpPercap` vs. `lifeExp`.
 1.  Fill out the grammar components below. Again, bold *must* be specified to make a `ggplot2` plot.
     -   We'll ignore "coordinate system" and "facetting" after this.
 
-| Grammar Component     | Specification     |
-|-----------------------|-------------------|
-| **data**              | `gapminder`       |
-| **aesthetic mapping** | 'x' and 'y'       |
-| **geometric object**  | point             |
-| scale                 | linear (default)  |
-| statistical transform | no transformation |
-| coordinate system     |                   |
-| facetting             |                   |
+| Grammar Component     | Specification            |
+|-----------------------|--------------------------|
+| **data**              | `gapminder`              |
+| **aesthetic mapping** | 'x' and 'y'              |
+| **geometric object**  | point                    |
+| scale                 | linear (default)         |
+| statistical transform | no transformation        |
+| coordinate system     | cartesian // rectangular |
+| facetting             | none                     |
 
 1.  Populate the data and aesthetic mapping in `ggplot`. What is returned? What's missing?
 
-2.  Add the missing component as a *layer*.
+``` r
+ggplot(gapminder, aes(x=lifeExp, y=gdpPercap)) + geom_point()
+```
+
+![](cm006-exercise_files/figure-markdown_github/unnamed-chunk-2-1.png)
+
+1.  Add the missing component as a *layer*.
+
+--&gt; The added layer is the +geom\_point() and was added in part 2.
 
 Notice the "metaprogramming" again!
 
+--&gt; no need to use ' ' when calling the lifeExp and gdpPercap. this is due to metaprogramming.
+
 1.  You *must* remember to put the aesthetic mappings in the `aes` function! What happens if you forget?
 
-2.  Put the x-axis on a log scale, first by transforming the x variable.
+``` r
+#ggplot(gapminder, x=lifeExp, y=gdpPercap) + geom_point()
+#this will give an error. need aes function with minimal x and y data. can also change colour etc here, but not needed.
+
+ggplot(gapminder, aes(x=lifeExp, y=gdpPercap)) + geom_point()
+```
+
+![](cm006-exercise_files/figure-markdown_github/unnamed-chunk-3-1.png)
+
+1.  Put the x-axis on a log scale, first by transforming the x variable.
     -   Note: `ggplot2` does some data wrangling and computations itself! We don't always have to modify the data frame.
-3.  Try again, this time by changing the *scale* (this way is better).
 
-4.  The aesthetic mappings can be specified on the geom layer if you want, instead of the main `ggplot` call. Give it a try:
+``` r
+ggplot(gapminder, aes(x=lifeExp, y=log(gdpPercap))) + geom_point() #first arg for aes are automatically x and y unless you specify. x= y=
+```
 
-5.  Optional: git stage and commit
+![](cm006-exercise_files/figure-markdown_github/unnamed-chunk-4-1.png)
+
+1.  Try again, this time by changing the *scale* (this way is better).
+
+``` r
+ggplot(gapminder, aes(x=lifeExp, y=gdpPercap)) +
+  geom_point() +
+  scale_y_log10()
+```
+
+![](cm006-exercise_files/figure-markdown_github/unnamed-chunk-5-1.png)
+
+1.  The aesthetic mappings can be specified on the geom layer if you want, instead of the main `ggplot` call. Give it a try:
+
+2.  Optional: git stage and commit
 
 **Uses of a scatterplot**:
 
@@ -68,23 +114,66 @@ Histograms, and Kernel Density Plots
 
 Let's build a histogram of life expectancy.
 
+-&gt; useful to visualize distribution of a numeric variable.
+
 1.  Fill out the grammar components below. Again, bold *must* be specified to make a `ggplot2` plot.
 
 | Grammar Component     | Specification |
 |-----------------------|---------------|
 | **data**              | `gapminder`   |
-| **aesthetic mapping** |               |
-| **geometric object**  |               |
-| scale                 |               |
-| statistical transform |               |
+| **aesthetic mapping** | 'x'           |
+| **geometric object**  | histogram     |
+| scale                 | linear        |
+| statistical transform | none          |
 
 1.  Build the histogram of life expectancy.
 
-2.  Change the number of bins to 50.
+``` r
+ggplot(gapminder, aes(lifeExp)) +
+  geom_histogram()
+```
 
-3.  Instead of a histogram, let's create a kernel density plot.
+    ## `stat_bin()` using `bins = 30`. Pick better value with `binwidth`.
 
-4.  Optional: git stage and commit
+![](cm006-exercise_files/figure-markdown_github/unnamed-chunk-6-1.png)
+
+1.  Change the number of bins to 50.
+
+``` r
+ggplot(gapminder, aes(lifeExp)) +
+  geom_histogram(bins = 50)
+```
+
+![](cm006-exercise_files/figure-markdown_github/unnamed-chunk-7-1.png)
+
+1.  Instead of a histogram, let's create a kernel density plot.
+
+``` r
+ggplot(gapminder, aes(lifeExp)) + geom_density()
+```
+
+![](cm006-exercise_files/figure-markdown_github/unnamed-chunk-8-1.png)
+
+``` r
+#can change the bin width by changing bw. 
+ggplot(gapminder, aes(lifeExp)) + geom_density(bw = 0.5, fill = 'red')
+```
+
+![](cm006-exercise_files/figure-markdown_github/unnamed-chunk-8-2.png)
+
+Bonus: can change histogram to a probability density graph:
+
+``` r
+ggplot(gapminder, aes(lifeExp)) +
+  geom_histogram(aes(y=..density..)) + 
+  geom_density()
+```
+
+    ## `stat_bin()` using `bins = 30`. Pick better value with `binwidth`.
+
+![](cm006-exercise_files/figure-markdown_github/unnamed-chunk-9-1.png)
+
+1.  Optional: git stage and commit
 
 **Uses of a histogram**: Explore the distribution of a single numeric variable.
 
@@ -95,21 +184,47 @@ Let's make *box plots* of population for each continent. Note: y-axis is much be
 
 1.  Fill out the grammar components below. Again, bold *must* be specified to make a `ggplot2` plot.
 
-| Grammar Component     | Specification |
-|-----------------------|---------------|
-| **data**              | `gapminder`   |
-| **aesthetic mapping** |               |
-| **geometric object**  |               |
-| scale                 |               |
-| statistical transform |               |
+| Grammar Component     | Specification         |
+|-----------------------|-----------------------|
+| **data**              | `gapminder`           |
+| **aesthetic mapping** | 'x' and 'y'           |
+| **geometric object**  | boxplot               |
+| scale                 | log y                 |
+| statistical transform | yes: 5-number summary |
 
 1.  Initiate the `ggplot` call, with the log y scale, and store it in the variable `a`. Print out `a`.
 
-2.  Add the boxplot geom to `a`.
+``` r
+#makes it easier so we don't have to rewrite all the time.
+a = ggplot(gapminder, aes(continent, pop)) + 
+  scale_y_log10()
+a #gives blank plot. bc we still haven't added boxplot geom. 
+```
 
-3.  A violin plot is a kernel density on its side, made symmetric. Add that geom to `a`.
+![](cm006-exercise_files/figure-markdown_github/unnamed-chunk-10-1.png)
+
+1.  Add the boxplot geom to `a`.
+
+``` r
+a + geom_boxplot()
+```
+
+![](cm006-exercise_files/figure-markdown_github/unnamed-chunk-11-1.png)
+
+1.  A violin plot is a kernel density on its side, made symmetric. Add that geom to `a`.
     -   What's better here, boxplots or violin plots? Why?
-4.  Optional: git stage and commit
+
+``` r
+a + geom_violin()
+```
+
+![](cm006-exercise_files/figure-markdown_github/unnamed-chunk-12-1.png)
+
+``` r
+#similar to kernel density
+```
+
+1.  Optional: git stage and commit
 
 **Use of boxplot**: Visualize 1-dimensional distributions (of a single numeric variable).
 
@@ -120,17 +235,47 @@ Let's work up to the concept of a *jitter plot*. As above, let's explore the pop
 
 Let's hold off on identifying the grammar.
 
+``` r
+a + geom_point(alpha = 0.1) 
+```
+
+![](cm006-exercise_files/figure-markdown_github/unnamed-chunk-13-1.png)
+
+``` r
+#alpha is transparancy = 0.1 means 10 points on top of e/o to get an opaque point. This helps a bit in helping see the density of graph.
+```
+
 1.  Initiate the `ggplot` call to make a scatterplot of `continent` vs `pop`; initiate the log y scale. Store the call in the variable `b`.
 
-2.  Add the point geom to `b`. Why is this an ineffective plot?
+see above 'a'
 
-3.  A solution is to jitter the points. Add the jitter geom. Re-run the command a few times -- does the plot change? Why?
+1.  Add the point geom to `b`. Why is this an ineffective plot?
 
-4.  How does the grammar differ from a box plot or violin plot?
+see above
+
+1.  A solution is to jitter the points. Add the jitter geom. Re-run the command a few times -- does the plot change? Why?
+
+``` r
+a + geom_jitter(alpha = 0.25)
+```
+
+![](cm006-exercise_files/figure-markdown_github/unnamed-chunk-14-1.png)
+
+1.  How does the grammar differ from a box plot or violin plot?
     -   ANSWER:
-5.  We can add multiple geom *layers* to our plot. Put a jitterplot overtop of the violin plot, starting with our base `b`. Try vice-versa.
+2.  We can add multiple geom *layers* to our plot. Put a jitterplot overtop of the violin plot, starting with our base `b`. Try vice-versa.
 
-6.  Optional: git stage and commit
+``` r
+a + geom_violin() + geom_jitter(alpha = 0.1)
+```
+
+![](cm006-exercise_files/figure-markdown_github/unnamed-chunk-15-1.png)
+
+``` r
+#adding jitter helps you see the number of points. whereas just violin, you don't know how many data points you have. More complete picture of the data. better than pinhead plots (mean + SD) .
+```
+
+1.  Optional: git stage and commit
 
 **Uses of jitterplot**: Visualize 1-dimensional distributions, AND get a sense of the sample size.
 
@@ -149,16 +294,50 @@ Let's make some time/line plot, starting with Canada's life expectancy over time
 | scale                 |               |
 | statistical transform |               |
 
+skip filling in the grammar here for now...
+
 1.  In one readable call, write code that:
     1.  Filters the data to Canada only
     2.  Pipes the filtered data into `ggplot`
     3.  Makes the time plot of `lifeExp` over time
     4.  Also displays the points
-2.  Attempt to overlay line plots for all countries. That is, repeat the above code, but don't filter. What's wrong here?
 
-3.  Use the `group` aesthetic to fix the problem.
+``` r
+#can either pipe then store into a new variable, or just pipe it into ggplot. 
+gapminder %>% 
+  filter(country == "Canada") %>% 
+  ggplot(aes(year, lifeExp)) +
+  geom_line() + 
+  geom_point()
+```
 
-4.  Optional: git stage and commit
+![](cm006-exercise_files/figure-markdown_github/unnamed-chunk-16-1.png)
+
+``` r
+#geom line connects dots from left to right, even if order is different. 
+#when you start using ggplot in piping, you need to use + not %>% 
+```
+
+1.  Attempt to overlay line plots for all countries. That is, repeat the above code, but don't filter. What's wrong here?
+
+``` r
+c = ggplot(gapminder, aes(year, lifeExp))
+c + geom_line() #this alone doesnt give what we want. so we add the following aes:
+```
+
+![](cm006-exercise_files/figure-markdown_github/unnamed-chunk-17-1.png)
+
+``` r
+c + geom_line(aes(group = country), alpha = 0.2)
+```
+
+![](cm006-exercise_files/figure-markdown_github/unnamed-chunk-17-2.png)
+
+1.  Use the `group` aesthetic to fix the problem.
+
+see above.
+
+1.  Optional: git stage and commit
 
 **Uses of time/line plots**: Visualize trends of a numeric variable over time.
 
