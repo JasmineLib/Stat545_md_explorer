@@ -236,8 +236,8 @@ gapminder %>%
 
 ```{r}
 cda = gapminder %>%  #select a vector of gdp per capita for canada. 
-  mutate (gdp = gdpPercap * pop) %>% 
   filter (country =="Canada") %>% 
+  mutate (cda_gdp = gdpPercap * pop) %>% 
   '[['("gdpPercap") #indicate a single variable in quotation marks to extract that value. we can use this instead of select. 
 
  #rep will repeat that vector a certain way. so in this case it will repeat canada for each level, or value, of countries. #we assume here each country has same # of years.
