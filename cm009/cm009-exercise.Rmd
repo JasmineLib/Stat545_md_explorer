@@ -87,8 +87,8 @@ lotr_Untidy
 gather(lotr_Untidy, key = "Gender", value = "Words Spoken", Female, Male) #value will name the new columns. we also need to specify the columns that currently make up the variables we want to merge (Female and Male in our case). Key is the separation - we will separate by gender male or female. and the values currently inside it we will re-assign as a "words spoken" variable.
 
 #we can specify a range of columns
-gather(lotr_Untidy, key = "Gender", value = "Words Spoken", Female: Male) #use :
-gather(lotr_Untidy, key = "Gender", value = "Words Spoken", contains("ale")) #will return values that contain "ale" which in our case is found in both male and female
+gather(lotr_Untidy, key = "Gender", value = "Words", Female: Male) #use :
+gather(lotr_Untidy, key = "Gender", value = "Words", contains("ale")) #will return values that contain "ale" which in our case is found in both male and female
 ```
 
 3. Try again (bind and tidy the three untidy data frames), but without knowing how many tables there are originally. 
@@ -97,7 +97,10 @@ gather(lotr_Untidy, key = "Gender", value = "Words Spoken", contains("ale")) #wi
 ```{r}
 lotr_list = list(LOTR1, LOTR2, LOTR3)
 lotr_list
-returns 3 outputs, each of which are a dataframe.
+#returns 3 outputs, each of which are a dataframe.
+
+do.call(bind_rows, lotr_list) # first arg is the function, second argument is applying function to all datasets.
+
 ```
 
 ## `spread()`
@@ -109,19 +112,30 @@ This function is useful for making tidy data untidy (to be more pleasing to the 
 Read in the tidy LOTR data (despite having just made it):
 
 ```{r}
-lotr_tidy <- read_csv("https://raw.githubusercontent.com/jennybc/lotr-tidy/master/data/lotr_tidy.csv")
+lotr_tidy <- read_csv("https://raw.githubusercontent.com/jennybc/lotr-tidy/master/data/lotr_tidy.csv") #bring in the tidy data (done already here for us)
+#we want to spread out the race catetogy onto different columns. new column for each race w/ word count under each. 
+spread(lotr_tidy, key = "Race", value = "Words") #the key we want to spread into columns is Race and the value we want to put into that column is "Words"
 ```
 
 Get word counts across "Race". Then try "Gender". 
 
 ```{r}
+spread(lotr_tidy, key = "Race", value = "Words") #the key we want to spread into columns is Race and the value we want to put into that column is "Words"
 
 ```
 
 Now try combining race and gender. Use `unite()` from `tidyr` instead of `paste()`. 
 
 ```{r}
+#first arg of unite are the name of the new column to make.
+lotr_tidy %>% 
+  unite(Race_Gender, Race, Gender) %>% #Race_Gender = name of new column. and then we specify the columns we want to unite.
+  spread(key = "Race_Gender", value = "Words")
 
+
+lotr_tidy %>% 
+  mutate(x = rnorm(nrow(lotr_tidy))) %>% 
+  spread(key = "Gender", value ="x") #why if we do this did it keep NAs? The words variable doesnt have a unique combination
 ```
 
 ## Other `tidyr` goodies
@@ -131,6 +145,34 @@ Check out the Examples in the documentation to explore the following.
 `expand` vs `complete` (trim vs keep everything). Together with `nesting`. Check out the Examples in the `expand` documentation.
 
 ```{r}
+expand(mtcars,vs,cyl) #returns all possible combinations of these two varaibles in the mtcars dataframe. if you use 
+expand(mtcars, nesting(vs, cyl)) #it only returns combos in the df.
+
+
+df <- tibble(
+  year   = c(2010, 2010, 2010, 2010, 2012, 2012, 2012),
+  qtr    = c(   1,    2,    3,    4,    1,    2,    3),
+  return = rnorm(7))
+  
+df %>% 
+  expand(year, qtr)
+#full seq = ex. full_seq(year) expands all years by increments of 1. 
+df %>% expand(year = full_seq(year, 1), qtr)
+
+
+#nesting:
+#patients receiving various treatments... some have 3 measurements, others have 2. the goal is to fill in the ones with two with NAs. 
+#we don't want to look at all combos ex. Robert with A since robert didn't take tmt A. we can ne
+experiment <- tibble(
+  name = rep(c("Alex", "Robert", "Sam"), c(3, 2, 1)),
+  trt  = rep(c("a", "b", "a"), c(3, 2, 1)),
+  rep = c(1, 2, 3, 1, 2, 1),
+  measurment_1 = runif(6),
+  measurment_2 = runif(6))
+  
+  #nesting.
+  experiment
+  experiment %>% expand(nesting(name,trt), rep)
 
 ```
 
@@ -138,6 +180,13 @@ Check out the Examples in the documentation to explore the following.
 
 ```{r}
 
+df <- data.frame(
+  x = 1:3,
+  y = c("a", "d,e,f", "g,h"),
+  z = c("1", "2,3,4", "5,6"),
+  stringsAsFactors = FALSE
+)
+separate_rows(df, y, z, convert = TRUE)
 ```
 
 `unite` and `separate`.
@@ -149,20 +198,22 @@ Check out the Examples in the documentation to explore the following.
 `uncount` (as the opposite of `dplyr::count()`)
 
 ```{r}
-
+#opposite of count. makes a repeated row for the number of observations tht you have.
+?
 ```
 
 
 `drop_na` and `replace_na`
 
 ```{r}
-
+#drops NAs by just dropping the rows.
+#replace_na will replace with whatever you want.
 ```
 
 `fill`
 
 ```{r}
-
+#fill rows? ex. fills in NAs with the nearest previous non- NA entry.  ????? Avoid?
 ```
 
 
