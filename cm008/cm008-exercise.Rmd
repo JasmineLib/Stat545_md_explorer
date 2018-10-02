@@ -79,7 +79,8 @@ gapminder %>%
 
 gapminder %>% 
   group_by(continent, country) %>% 
-  summarize(mu = mean(lifeExp))
+  summarize(mu = mean(lifeExp)) 
+  #summarize(mu = mean(mu))
 #every time you use summarize the grouping gets peeled back by 1 layer??? 
 #we are supposed to see a grouping info at the top of the column. 
   
@@ -152,7 +153,7 @@ gapminder %>%
 
 gapminder %>%
   group_by(continent) %>% 
-  tally()
+  tally() %>% 
 
 gapminder %>%
   count(continent)
