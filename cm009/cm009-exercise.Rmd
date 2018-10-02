@@ -1,0 +1,178 @@
+---
+title: "cm009 Exercises: tidy data"
+output: github_document
+---
+getwd()
+setwd()
+read_csv vs. read.csv. one will keep elements as factors, while the other will keep things as characters.
+```{r}
+suppressPackageStartupMessages(library(tidyverse))
+#tidyverse contains readR package and others.
+```
+
+## Reading and Writing Data: Exercises
+
+Make a tibble of letters, their order in the alphabet, and then a pasting of the two columns together.
+
+```{r}
+tibble(let = letters,
+       num = 1:length(letters),
+       comb = paste(let, num)) #paste function puts the two together using a space value. you can change the separation by adding sep = , or use paste0 which will have no separation between pasted values. 
+```
+
+Make a tibble of three names and commute times.
+- A way to manually encode all values in your data frame.
+```{r}
+tribble(
+  ~name, ~time, # '~' indicates the names of variables we are adding.
+  "Frank", 30,
+  "Lisa", 15,
+  "Fred", 40
+  )
+```
+
+
+Write the `iris` data frame as a `csv`. 
+
+```{r}
+write_csv(iris, "iris.csv")
+#first arg is data we want, 2nd arg is the path (if you press tab it will lead to files that you currently have, or you can make your own which will be saved in your current working directory)
+```
+
+Write the `iris` data frame to a file delimited by a dollar sign. 
+
+```{r}
+write_delim(iris, "iris.txt", delim = "$")
+```
+
+Read the dollar-delimited `iris` data to a tibble.
+
+```{r}
+read_delim("iris.txt", delim = "$")
+#to read the dataset. 
+#delim is how the columns are delimited.
+```
+
+Read these three LOTR csv's, saving them to `lotr1`, `lotr2`, and `lotr3`:
+
+- https://raw.githubusercontent.com/jennybc/lotr-tidy/master/data/The_Fellowship_Of_The_Ring.csv
+- https://raw.githubusercontent.com/jennybc/lotr-tidy/master/data/The_Two_Towers.csv
+- https://github.com/jennybc/lotr-tidy/blob/master/data/The_Return_Of_The_King.csv
+
+```{r}
+LOTR1 = read_csv("https://raw.githubusercontent.com/jennybc/lotr-tidy/master/data/The_Fellowship_Of_The_Ring.csv") #can just paste the URL above
+LOTR2 = read_csv("https://raw.githubusercontent.com/jennybc/lotr-tidy/master/data/The_Two_Towers.csv")
+LOTR3 = read_csv("https://raw.githubusercontent.com/jennybc/lotr-tidy/master/data/The_Return_Of_The_King.csv")
+```
+
+## `gather()`
+
+(Exercises largely based off of Jenny Bryan's [gather tutorial](https://github.com/jennybc/lotr-tidy/blob/master/02-gather.md))
+
+This function is useful for making untidy data tidy (so that computers can more easily crunch the numbers).
+
+1. Combine the three LOTR untidy tables (`lotr1`, `lotr2`, `lotr3`) to a single untidy table by stacking them.  
+
+```{r}
+#gather makes untidy data tidy. 
+lotr_Untidy = bind_rows(LOTR1, LOTR2, LOTR3)
+lotr_Untidy
+# lotr_Untidy may look tidy but it's still not. why? gender is still in two columns but we want to combine it into one. 
+```
+
+2. Convert to tidy. Also try this by specifying columns as a range, and with the `contains()` function.
+
+```{r}
+
+gather(lotr_Untidy, key = "Gender", value = "Words Spoken", Female, Male) #value will name the new columns. we also need to specify the columns that currently make up the variables we want to merge (Female and Male in our case). Key is the separation - we will separate by gender male or female. and the values currently inside it we will re-assign as a "words spoken" variable.
+
+#we can specify a range of columns
+gather(lotr_Untidy, key = "Gender", value = "Words Spoken", Female: Male) #use :
+gather(lotr_Untidy, key = "Gender", value = "Words Spoken", contains("ale")) #will return values that contain "ale" which in our case is found in both male and female
+```
+
+3. Try again (bind and tidy the three untidy data frames), but without knowing how many tables there are originally. 
+    - The additional work here does not require any additional tools from the tidyverse, but instead uses a `do.call` from base R -- a useful tool in data analysis when the number of "items" is variable/unknown, or quite large. 
+
+```{r}
+lotr_list = list(LOTR1, LOTR2, LOTR3)
+lotr_list
+returns 3 outputs, each of which are a dataframe.
+```
+
+## `spread()`
+
+(Exercises largely based off of Jenny Bryan's [spread tutorial](https://github.com/jennybc/lotr-tidy/blob/master/03-spread.md))
+
+This function is useful for making tidy data untidy (to be more pleasing to the eye).
+
+Read in the tidy LOTR data (despite having just made it):
+
+```{r}
+lotr_tidy <- read_csv("https://raw.githubusercontent.com/jennybc/lotr-tidy/master/data/lotr_tidy.csv")
+```
+
+Get word counts across "Race". Then try "Gender". 
+
+```{r}
+
+```
+
+Now try combining race and gender. Use `unite()` from `tidyr` instead of `paste()`. 
+
+```{r}
+
+```
+
+## Other `tidyr` goodies
+
+Check out the Examples in the documentation to explore the following.
+
+`expand` vs `complete` (trim vs keep everything). Together with `nesting`. Check out the Examples in the `expand` documentation.
+
+```{r}
+
+```
+
+`separate_rows`: useful when you have a variable number of entries in a "cell".
+
+```{r}
+
+```
+
+`unite` and `separate`.
+
+```{r}
+
+```
+
+`uncount` (as the opposite of `dplyr::count()`)
+
+```{r}
+
+```
+
+
+`drop_na` and `replace_na`
+
+```{r}
+
+```
+
+`fill`
+
+```{r}
+
+```
+
+
+`full_seq`
+
+```{r}
+
+```
+
+
+## Time remaining?
+
+Time permitting, do [this exercise](https://github.com/jennybc/lotr-tidy/blob/master/02-gather.md#exercises) to practice tidying data. 
