@@ -196,24 +196,24 @@ separate_rows(df, y, z, convert = TRUE)
 ```
 
 `uncount` (as the opposite of `dplyr::count()`)
-
-```{r}
 #opposite of count. makes a repeated row for the number of observations tht you have.
-?
+```{r}
+
+
 ```
 
 
 `drop_na` and `replace_na`
-
-```{r}
 #drops NAs by just dropping the rows.
 #replace_na will replace with whatever you want.
+```{r}
+
 ```
 
 `fill`
-
-```{r}
 #fill rows? ex. fills in NAs with the nearest previous non- NA entry.  ????? Avoid?
+```{r}
+
 ```
 
 
