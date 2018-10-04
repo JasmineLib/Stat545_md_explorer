@@ -27,33 +27,64 @@ suppressPackageStartupMessages(library(nycflights13))
 
 ### left_join: Join matching rows from `b` to `a` by matching "x1" variable
 
+```{r}
+#prints variables that match to x1.
+left_join(a,b,by="x1")
+
+```
 
 
 ### right_join: Join matching rows from `a` to `b` by matching "x1" variable.
+
+```{r}
+#prints variables that match 
+right_join(a,b,by="x1")
+```
 
 
 
 ### inner_join: Join data. Retain only rows in both sets `a` to `b` by matching "x1" variable.
 
+```{r}
+inner_join(a, b, by = "x1")
+```
 
 
 ### full_join: Join data. Retain all values, all rows of `a` to `b` by matching "x1"
 
+```{r}
+full_join(a, b, by = "x1")
+```
 
 
 ### what happen if we do not specify `by` option?
 
+```{r}
+left_join(a,b)
+#mutates by matching columns (by column name), as x1 is found in both 
+#cannot combine more than 2 tibbles, but reduce package takes all the tibbles and does this function in a loop.
+```
 
 
 ### what happen if we join two different variables (e.g., "x1" to "x3") from two tibbles `a` to `b`?
+```{r}
+left_join(a,b,by= c("x1" = "x3")) #no match, so it prints only NA. 
+b
+a
+#we can specify which column to take from left and which from right.  (see below?)
+```
 
 
 
 ### what happen if two columns of `a` and `c` datasets have the identical colnames?
 
 ```{r}
+
 # make data frame c and use inner_join()
 (c <- tibble(x1 = c(LETTERS[1:2],"x"), x2 = c(1,4,5)))
+left_join(a,c)
+#how does dplyr handle identical column names?
+
 ```
 
 ## In class practice
@@ -66,9 +97,9 @@ suppressPackageStartupMessages(library(nycflights13))
 #check the tibbles included in `nycflights13` package
 class(flights)
 
-colnames(flights)
+colnames(flights) #19 columns in flights
 
-colnames(airlines)
+colnames(airlines) #two columns
 
 colnames(weather)
 ```
@@ -78,38 +109,70 @@ colnames(weather)
 ```{r}
 flights2 <- flights[1:1000,] %>% 
   select(year, tailnum, carrier, time_hour)
+dim(flights2)
 ```
 
 ### 3. Add airline names to `flights2` from `airlines` dataset.
 
 ```{r}
 # Which join function to use?
+airlines
+flights2
+
+left_join(flights2, airlines) #airline names are added from the airline dataset.  using left join we added airline names joined by carrier column. no need to specify as it automatically joins by common variable???
 
 ```
 
 ### 4. Add `weather` information to the `flights2` dataset by matching "year" and "time_hour" variables.
 
+```{r}
+weather
+left_join(flights2, weather, by = c("year", "time_hour"))
+#why does c() work in this case but in case of filtering data it did not work? 
+#another way to do this
+flights2 %>% 
+  left_join(weather, by=c("year", "time_hour"))
+```
 
 
 ### 5. Add `weather` information to the `flights2` dataset by matching only "time_hour" variable
 
+```{r}
+flights %>% 
+  left_join(weather, by = "time_hour")
+```
 
 
 ## Types of filtering join
 
 ### Let's filter tibbles using two filtering functions: `semi_join`, `anti_join` 
 
+```{r}
+#semi join = filter (keep) all rows in a that have a match in b. 
+semi_join(a,b)
+#anti-join = filter (keep) all rows in a that do not have a match in b.
+anti_join(a,b)
+#we can also specify which variable we want to filter by:
+anti_join(a,b, by="x1") #but in thiscase it's automatcially done this way bc x1 is the only matching 
+```
+
 
 ### example for `semi_join`: All rows in `a` that have a match in `b`
 
-
+see above.
 
 ### example for `anti_join`: All rows in `a` that do not have a match in `b`
 
-
+see above.
 
 ### example of joinin by matching two variables (e.g., "x1", "x2") from both datasets `a` and `c`
 
+```{r}
+a
+c
+#a and c have identical column names
+semi_join(a,c) #so automatically it will filter both by x1 and x2, therefore keeping only row A, as this is the only one that matched in both variables x1 and x2. 
+```
 
 
 ## Types of Set Operations for two datasets
@@ -125,6 +188,9 @@ flights2 <- flights[1:1000,] %>%
 
 ### example for `intersect`: Rows that appear in both `y` and `z`
 
+```{r}
+
+```
 
 
 ### example for `union`: Rows that appear in either or both `y` and `z`
