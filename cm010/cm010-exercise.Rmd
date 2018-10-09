@@ -189,22 +189,31 @@ semi_join(a,c) #so automatically it will filter both by x1 and x2, therefore kee
 ### example for `intersect`: Rows that appear in both `y` and `z`
 
 ```{r}
-
+intersect(y,z)
 ```
 
 
 ### example for `union`: Rows that appear in either or both `y` and `z`
 
+```{r}
+union(y,z)
+```
 
 
 ### example for `setdiff`: Rows that appear in `y` but not `z`. __Caution:__ `setdiff` for `y` to `z` and `z` to `y` are different.
 
 
+```{r}
+setdiff(y,z) #rows that appear in y but not z
+setdiff(z,y) #rows that appear in z but not y.
+```
 
 ### what happen if colnames are differentin `y` and `x`? Is there any error message and why?
 
 ```{r}
 (x <- tibble(x1 = c("B", "C", "D"), x3 = 2:4))
+#intersect(y,x) if we run this we have an error, because there neeeds to be identical columns. this issn't the case here. 
+#union(x,y)
 
 ```
 
@@ -214,13 +223,24 @@ semi_join(a,c) #so automatically it will filter both by x1 and x2, therefore kee
 
 ### example for `bind_rows`: Append `z` to `y` as new rows
 
+```{r}
+bind_rows(y,z) #adds all the rows of z to bottom of y.
+```
 
 
 ### example for `bind_cols`: Append `z` to `y` as new columns. __Caution__: matches rows by position. Check colnames after binding.
 
+```{r}
+bind_cols(y,z) #notice the change of column names.
+```
+
 
 ### what happen if colnames are different between `y` and `x` datasets?
 
+```{r}
+bind_cols(y,x) #there is no conflict for column binding. no need for the renaming of column name. 
+bind_rows(y,x)
+```
 
 ##Practice Exercises
 Practice these concepts in the following exercises. It might help you to first identify the type of function you are applying.
@@ -228,9 +248,37 @@ Practice these concepts in the following exercises. It might help you to first i
 
 ### 1. Filter the rows of `flights2` by matching "year" and "time_hour" variables to `weather` dataset. Use both `semi_join()` and `anti_join()`
 
+```{r}
+semi_join(flights2, weather, by=c("year", "time_hour"))
+anti_join(flights2, weather, by=c("year", "time_hour")) #see no mismatch. 
+```
 
 
 ### 2. Can we apply `set` and `binding` funcions between `flights2` and `weather` datasets. Why and why not?
+```{r}
+union(flights2, weather) #error bc col names in flight 2 and weather are different. 
+intersect(flights2, weather)
+setdiff(flights2, weather)
+bind_cols(flights2, weather) #doesn't work bc diff number of rows.
+bind_rows(flights2, weather) #this should work? 
+#none of them work? why?? 
+```
 
 
 ### 3. Let's create a tibble `p` with "x1" and "x2" coulmns and have duplicated element in "x1" column. Create another tibble `q` with "x1" and "x3" columns. Then apply `left_join` function `p` to `q` and `q` to `p`. 
+
+```{r}
+#(p <- tibble(x1 = LETTERS[1:3], x2 = LETTERS[1:3]))
+#q <- tibble(x1 = LETTERS[1:3], x3 = 1:3))
+#left_join(p,q)
+#left_join(q,p)
+
+(p = tibble(x1 = c("a", "b", "b", "c"),x2 = 1:4))
+(q = tibble(x1 = c("a", "b", "c", "c"), x3= 5:8))
+
+left_join(p,q) #b is found twice in dataset p, so it prints the value twice in q.
+left_join(q,p) #c is found twice in q so when joining it prints the value 4 in p twice.  
+
+
+```
+
