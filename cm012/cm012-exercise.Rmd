@@ -1,8 +1,6 @@
 ---
 title: "cm012 Exercises: Factors"
-output: html_notebook
-editor_options:
-  chunk_output_type: inline
+output: github_document
 ---
 
 `forcats` package comes loaded with `tidyverse`:
@@ -29,11 +27,11 @@ What is a factor? A "truly categorical" variable. You can think of it as a vecto
 Examples of Base R's obsession with coercing to factors:
 
 ```{r}
-data.frame(x=c("A", "B")) %>% 
+data.frame(x=c("A", "B")) %>%  #character column becomes factor. #entries become integers 1 & 2.
   str()
 ```
 
-
+Look at structure of the LOTR data.
 ```{r}
 lotr1 <- "https://raw.githubusercontent.com/jennybc/lotr-tidy/master/data/The_Fellowship_Of_The_Ring.csv" %>% 
   read.csv()
@@ -42,6 +40,7 @@ lotr2 <- "https://raw.githubusercontent.com/jennybc/lotr-tidy/master/data/The_Re
 str(lotr1)
 str(lotr2)
 ```
+film and race look like character vectors, but they are coerced to factors. 
 
 
 Examples of problems encountered with factors. (ideas came from [R Bloggers](https://www.r-bloggers.com/factors-are-not-first-class-citizens-in-r/))
@@ -51,28 +50,56 @@ iris %>%
   mutate(Species = ifelse(Species == "versicolor", "vers", Species))
 ```
 
+#notice the species column is no longer species, it's just integers. 
+looking at the structure: 
+
+```{r}
+iris %>% 
+  mutate(Species = ifelse(Species == "versicolor", "vers", Species)) %>%  #if species = versicolour, change to vers, else just return species. 
+  str()
+
+```
+we can see that vers is not a possible category in this factor. can't find that category, so it coerces to character vector, and shows integer values hidden underneath. 
+
+
 ```{r}
 c(iris$Species, "setosa")
 ```
+again, this doesn't return character vector, because it's a factor. 
+can always convert factor to character:
 
+```{r}
+as.character(iris$Species)
+
+```
+this time it works. 
 
 - Base R way of interacting with factors:
     - `factor()`, or `forcats::parse_factor()`.
     - `levels()`
     - `nlevels()`
-    - `forcats::fct_count()`
+    - `forcats::fct_count()` - used to count how many observations there are for each level. 
 
 Here is a sample of 10 letters drawn from the possibilities "a", "b", and "c":
-
+made a character vector of letters. only possible values are a, b, or c. 
 ```{r}
 set.seed(10)
-(draw <- sample(letters[1:3], size = 10, replace = TRUE))
+(draw <- sample(letters[1:3], size = 10, replace = TRUE)) #setting seed ensures result of randomization is same each time? How? set seed goes through an iterative process that is the same each time, so you arrive at same result. diff result occurs if you set seed w/ a diff number inside.
+
+
 ```
 
 Convert `draw` to a factor. What are the levels? How many are there? How many of each category was drawn?
 
 ```{r}
-
+draw = factor(draw)
+draw
+#on bottom we see levels = possible categories each entry of the factor can take.
+levels(draw)# we see the possible levels are a, b, and c
+nlevels(draw) #number of levels
+fct_count(draw) #returns a tibble showing the factor levels and the count of each level.
+levels(draw) %>% 
+  is.factor() #returns false because each level in draw itself is not a factor.
 ```
 
 
@@ -82,6 +109,7 @@ We saw that `c()` doesn't work for concatenating. Modify the following code to u
 
 ```{r}
 c(lotr1$Film, lotr2$Film)
+#fct_??? missing something here. 
 ```
 
 Try binding by row `lotr1` and `lotr2`:
@@ -89,10 +117,18 @@ Try binding by row `lotr1` and `lotr2`:
 - with `rbind()`
 - with `bind_rows()`
 
-Which one is more lenient? Which would you prefer?
+Which one is more lenient? rbind is more lenient.  Which would you prefer?
 
 ```{r}
+rbind(lotr1, lotr2)
 
+rbind(lotr1, lotr2) %>% 
+  str()
+
+bind_rows(lotr1,lotr2) #get some warning messages: tells you your first df has 1 level, and second df has another level. but it lets you know they are combining different levels together. might be useful to know that you are adding levels to your factor.
+#doesn't combine factors, is just changes the film column to a character vector. whereas rbind thinks you want to add another level to your column.
+bind_rows(lotr1,lotr2) %>% 
+  str()
 ```
 
 
@@ -103,6 +139,12 @@ Levels don't always have to be present ("observed") in the factor. Example of wh
 ```{r}
 gap_gs <- gapminder %>% filter(country %in% c("Germany", "Sweden"))
 nlevels(gap_gs$country)
+#we would expect only 2 levels in the country variable.
+#but actually all the countries are being stored.
+levels(gap_gs$country)
+as.character(gap_gs$country) #here we see only the two countries as characters here.
+
+
 ```
 
 
@@ -112,9 +154,19 @@ __Example of when it's good__:
 
 Here's the gapminder data down to rows where population is less than a quarter of a million, i.e. 250,000:
 
-```{r}
+```{r fig.width = 4, fig.height = 1.5}
 gap_small <- gapminder %>% 
   filter(pop < 250000)
+
+gap_small %>% 
+  ggplot(aes(continent)) + geom_bar() #geom bar counts number of entries based on each continent.
+#graph doesn't show the levels of the other continents that have no countries with small pop. but the factors still exist.
+
+
+gap_small %>% 
+  ggplot(aes(continent)) + geom_bar() + 
+  scale_x_discrete(drop = FALSE) #keeps the 'hidden' factors
+
 ```
 
 Exercise: Make a bar chart of the number of times a continent has a country with population < 250,000 in the `gapminder` data set. Try with and without `scale_x_discrete(drop=FALSE)`.
@@ -137,6 +189,13 @@ Exercise: get rid of the unused factor levels for country and continent in diffe
 - Re-defining the variable as a factor
 
 ```{r}
+gap_small %>% 
+  droplevels()%>%
+  str() #preserves the tibble structure. country and continent are still factors, but only keeps those factors with values present. 
+
+gap_small %>% 
+  mutate(continent = fct_drop(continent)) %>% 
+  str() #country hasn't changed as we didn't touch this. but continent only has 3 levels.
 
 ```
 
@@ -152,8 +211,8 @@ levels(cont)
 
 Plotting happens in the order of the factor levels:
 
-```{r, fig.width=2, fig.height=1}
-qplot(cont)
+```{r, fig.width=3, fig.height=1.2}
+qplot(cont) #alphabetical looks ok, but we can order x axis by frequency (below)
 ```
 
 Much more effective to always consider a meaningful order when plotting a categorical variable. We'll look at three ways to re-order a factor. 
@@ -169,6 +228,17 @@ Reorder by frequency:
 cont %>% 
   fct_infreq() %>% 
   qplot()
+
+cont %>% 
+  fct_rev() %>% 
+  qplot()
+
+
+draw 
+draw %>% 
+  fct_inorder() %>%  #puts the levels in order in which they appear in the factor.
+  qplot()
+
 ```
 
 Could also arrange by the order they appear in the factor with `fct_inorder()`.
@@ -185,7 +255,11 @@ ggplot(gap_asia_2007, aes(lifeExp, country)) + geom_point()
 
 Let's use `fct_reorder()` to reorder the countries of `gap_asia_2007` by life Expectancy, and produce the same plot:
 
-```{r, fig.width=2, fig.height=1}
+```{r, fig.width=2, fig.height=2}
+gap_asia_2007 %>% 
+  mutate(country = fct_reorder(country, lifeExp)) %>% #want to reorder country. how? order by lifeexp
+ ggplot(aes(lifeExp, country)) + geom_point()
+
 
 ```
 
@@ -196,6 +270,8 @@ ggplot(gapminder, aes(continent, lifeExp)) +
   geom_violin()
 ggplot(gapminder, aes(continent, lifeExp)) +
   geom_boxplot()
+
+#if you don't specify it will order byMEDIAN, in this case, the median life expectancy, as each entry has various number of entries.
 ```
 
 `fct_reorder(f, x)` still works, but does some internal wrangling: a summary statistic (default: median) is computed on `x` for each category in the factor `f`.
@@ -203,6 +279,15 @@ ggplot(gapminder, aes(continent, lifeExp)) +
 Exercise: Try making the above box plot and violin plots, ordered by median lifeExp. Try other functions to order by by modifying the `.fun` argument.
 
 ```{r, fig.width=2, fig.height=1}
+gapminder %>% 
+  mutate(continent = fct_reorder(continent, lifeExp)) %>% #sorts median LE for each continent.
+  ggplot( aes(continent, lifeExp)) +
+  geom_violin() #asia and americas switched spots.
+
+gapminder %>% 
+  mutate(continent = fct_reorder(continent, lifeExp)) %>%  #how to use the .fun argument?
+  ggplot(aes(continent, lifeExp)) +
+  geom_boxplot()
 
 ```
 
@@ -223,10 +308,16 @@ Use `fct_reorder2(f, x, y)` to reorder factor `f`:
 - `.fun` is a function of `x` and `y`. Should return a single value, and is applied to each category.
 - Default is `.fun = last2`, which looks at x-y plot for each category; uses the y-value furthest to the right.
 
-Exercise: Reorder the above line graph so that the legend is in order of last life expectancy. Useful for black-and-white printing!
+Exercise: Reorder the above line graph so that the legend is in order of last life expectancy (ie LE in 2007) . Useful for black-and-white printing!
 
 ```{r, fig.width=2, fig.height=1}
 
+gap_select %>% 
+  mutate(country = fct_reorder2(country, year, lifeExp)) %>% 
+  ggplot(aes(year, lifeExp))+
+  geom_line(aes(colour = country))
+
+#rearrange country in the order of value at the end.
 ```
 
 ### Ordering "because I said so"
@@ -235,12 +326,12 @@ Remember the plot of Asian life expectancies in 2007? What if you're preparing a
 
 Here's how to use `fct_relevel()` to do that. Exercise: modify the code so that:
 
-- in addition, Sweden goes second.
+- in addition, Sweden goes second.Sweden is an unused levle that wouldnt show up, but it shows up here because we call it.
 - instead of first, Syria goes after the third level. Hint: use `after=`.
 
 ```{r}
 gap_asia_2007$country %>% 
-  fct_relevel("Syria") %>% 
+  fct_relevel("Syria", "Sweden", after = 2) %>% #places syria up front. iF we want it to come third, use after = 2 (comes after the second ie 3rd and 4th)
   levels() %>% 
   head()
 ```
@@ -285,10 +376,13 @@ More practically, we can lump the least frequent levels together as "Other". Mod
 - Note: you can manually specify non-other levels using `fct_other()`.
 
 ```{r, fig.width=2, fig.height=1}
-
+cont %>% 
+  fct_lump(n=2) %>% #lump together everything but the top 2. keep top 2 most frequent levels, then lump the rest together. 
+  #if you don't specify n=2, it will make the other bar the smallest bar. so it will choose the most number of "other" groups you can fit into it, such that other is msaller than the rest. in this case, that means lumping together 2, and showing 3. 
+  qplot()
 ```
 
-We can use the `w` argument to lump by another variable.
+We can use the `w` argument to lump by another variable of choice..
 
 Exercise: Modify the following violin plot of life expectancies of African countries, so that:
 
@@ -302,6 +396,7 @@ gap_africa %>%
     mutate(country = fct_lump(country)) %>% 
     ggplot(aes(country, lifeExp)) +
     geom_violin()
+
 ```
 
 
@@ -338,11 +433,13 @@ gss_cat %>%
 
 # Dates and Times with Lubridate
 
-Goal here: some exposure to `lubridate`; know it exists.
+Goal here: some exposure to `lubridate`; know it exists. - makes working with date & time really easy.
 
 1. Use different combinations of y, m, d to make a date time object.
 
 ```{r}
+lubridate::ymd(170511) #comes in lubridate package. will convert any combo of year month date to a date object.
+lubridate::ymd("2017-May-11")
 
 ```
 
@@ -353,6 +450,7 @@ Goal here: some exposure to `lubridate`; know it exists.
 ```
 
 3. Add durations (exact time spans) with `ddays`, `dweeks`, ... and periods (human-interpretable time spans) with `days`, `weeks`, and especially `months`.
+dday vs. day (are you working with a human notion of a month or another fixed time duration???thta's the diff.)
 
 ```{r}
 
