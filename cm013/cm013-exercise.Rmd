@@ -16,15 +16,17 @@ library(gapminder)
     - Practice by saving the following plot to file: 
 
 ```{r}
-ggplot(mtcars, aes(hp, wt)) + 
+p= ggplot(mtcars, aes(hp, wt)) + 
     geom_point()
-ggsave(FILENAME_HERE, PLOT_OBJECT_HERE)
+ggsave("my_plot.png", p) #press tab to see where it saves. you can also put the /   / /// file path. 
+#for plot object: we are saving plot p into that file.
+#jpg, bmp, pdf, png, diff file types. 
 ```
 
 - Base R way: print plots "to screen", sandwiched between `pdf()`/`jpeg()`/`png()`... and `dev.off()`. 
 - Vector vs. raster: Images are stored on your computer as either _vector_ or _raster_.
     - __Raster__: an `n` by `m` grid of pixels, each with its own colour. `jpeg`, `png`, `gif`, `bmp`.
-    - __Vector__: represented as shapes and lines. `pdf`, [`svg`](https://www.w3schools.com/graphics/svg_intro.asp).
+    - __Vector__: represented as shapes and lines (infinitely scaleable). `pdf`, [`svg`](https://www.w3schools.com/graphics/svg_intro.asp).
     - For tips: ["10 tips for making your R graphics look their best""](http://blog.revolutionanalytics.com/2009/01/10-tips-for-making-your-r-graphics-look-their-best.html).
     
 # Scales; Colour
@@ -48,9 +50,9 @@ p_scales +
     scale_x_log10() +
     scale_colour_continuous(
         trans  = "log10", 
-        breaks = FILL_IN_BREAKS
+        breaks = 10^(1:10) #you can err on safe side because ggplot will not plot values that are out of range. #why did this change scale on pop, and not gdppercap?? gdp percap on x axis. because the change was withing scale_colour, if we want to chagne gdppercap, then make change within scale_x_log10()
     ) +
-    FILL_IN_SCALE_FUNCTION(breaks=FILL_IN_BREAKS)
+    scale_y_continuous(breaks=1:10*10)
 ```
 
 2. Specify `scales::*_format` in the `labels` argument of a scale function to do the following:
@@ -60,11 +62,11 @@ p_scales +
 ```{r}
 library(scales)
 p_scales +
-    scale_x_log10(labels=FILL_THIS_IN) +
+    scale_x_log10(labels=dollar_format()) +
     scale_colour_continuous(
         trans  = "log10", 
         breaks = 10^(1:10),
-        labels = FILL_THIS_IN
+        labels = comma_format()
     ) +
     scale_y_continuous(breaks=10*(1:10))
 ```
@@ -73,15 +75,19 @@ p_scales +
     - Notice the three different types of scales: sequential, diverging, and continuous.
 
 ```{r}
+#RColorBrewer has nice colour schemes. qualitative colour palette - for discrete variables (ie want more diff colours), sequential (small to large numbers), diverging (positive vs. neg ie red vs blue = hot/cold)
 ## All palettes the come with RColorBrewer:
+#install.packages("RColorBrewer")
+#at top we see sequential, middle is differential,and bottom is diverging.
+#can use scale_colour_distiller or scale_colour_brewer - use these to choose palette.
 RColorBrewer::display.brewer.all()
 p_scales +
     scale_x_log10(labels=dollar_format()) +
-    FILL_IN_WITH_RCOLORBREWER(
+    scale_colour_distiller(
         trans   = "log10",
         breaks  = 10^(1:10),
         labels  = comma_format(),
-        palette = FILL_THIS_IN
+        palette = "Greens"
     ) +
     scale_y_continuous(breaks=10*(1:10))
 ```
@@ -91,13 +97,14 @@ p_scales +
     - You can choose a palette with `option`.
 
 ```{r}
+library(viridis)
 p_scales +
     scale_x_log10(labels=dollar_format()) +
-    FILL_IN_WITH_RCOLORBREWER(
+    scale_colour_viridis_c(
         trans   = "log10",
         breaks  = 10^(1:10),
-        labels  = comma_format(),
-        palette = FILL_THIS_IN
+        labels  = comma_format()
+        #use option = " " to choose your palette in viridis
     ) +
     scale_y_continuous(breaks=10*(1:10))
 ```
@@ -129,8 +136,9 @@ ggplot(iris, aes(Sepal.Width, Sepal.Length)) +
           y = "Sepal Length",
           title = "Sepal sizes of three plant species") +
     theme_bw() +
-    theme(FILL_IN_ARG_FOR_AXIS_TITLE = FILL_THIS_IN,
-          strip.background = FILL_THIS_IN)
+    theme(axis.text = element_text(size = 16), #can specify font size, colour, italics, justification in element_text
+          strip.background = element_rect(fill= "orange") +
+            panel.background = element_rect(fill = "blue") ) #can specify features of rectangle like colour, opacity, fill, )
 ```
 
 
@@ -139,6 +147,7 @@ ggplot(iris, aes(Sepal.Width, Sepal.Length)) +
 Consider the following plot:
 
 ```{r}
+
 (p <- gapminder %>% 
      filter(continent != "Oceania") %>% 
      ggplot(aes(gdpPercap, lifeExp)) +
@@ -158,7 +167,8 @@ Consider the following plot:
 1. Convert it to a `plotly` object by applying the `ggplotly()` function:
 
 ```{r}
-FILL_THIS_IN
+library(plotly)
+ggplotly()
 ```
 
 2. You can save a plotly graph locally as an html file. Try saving the above:
@@ -204,6 +214,15 @@ plot_ly(gapminder,
         mode = "markers",
         opacity = 0.2)
 ```
+
+
+#publication quality plots:
+- font
+- labels and units
+- resolution/aspect ration
+- sans serif
+- colour choice
+- consistency
 
 
 
