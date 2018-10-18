@@ -1,9 +1,8 @@
 ins---
 title: "cm014 Worksheet: The Model-Fitting Paradigm in R"
-output: html_notebook
-editor_options: 
-  chunk_output_type: inline
+output: github_document
 ---
+styler --> formats your R code according to style guide.
 
 ```{r}
 suppressPackageStartupMessages(library(tidyverse))
@@ -34,8 +33,10 @@ ggplot(mtcars, aes(wt, mpg)) +
   geom_point() +
   labs(x = "Weight (1000's of lbs)")
 ```
+notice x and y variables hwere are dependent. if we ask what is mpg of a car of 4000lbs, we would estimate it to be around 15-16. Can we describe the dependence?
 
-Example: What can we say about rear axle ratio if we know something about quarter mile time?
+
+Example: What can we say about rear axle ratio if we know something about quarter mile time? Not much. not gaining much information , no trend visible. no dependence here.
 
 ```{r, fig.width=3, fig.height=1.7}
 ggplot(mtcars, aes(qsec, drat)) + 
@@ -61,6 +62,10 @@ Model fitting methods tend to use a common format in R:
 ```
 method(formula, data, options)
 ```
+^ usually needs to be tidy data, where each row represents 1 unit.
+
+
+
 
 They also tend to have a common output: a special _list_. 
 
@@ -77,8 +82,9 @@ A function such as:
 __Formula__:
 
 In R, takes the form `y ~ x1 + x2 + ... + xp` (use column names in your data frame).
+predict something about y using variables x1 and x2 to xp. 
 
-__Data__: The data frame.
+__Data__: The data frame. (tidy data usually)
 
 __Options__: Specific to the method.
 
@@ -88,21 +94,32 @@ Exercise:
 2. On a new line, use the `unclass` function to uncover the object's true nature: a list. Note: it might be easier to use the `names` function to see what components are included in the list. 
 
 ```{r}
-(my_lm <- lm(FILL_THIS_IN, data=gapminder))
+
+(my_lm <- lm(lifeExp ~ log(gdpPercap), data=gapminder))
+unclass(my_lm)
+names(my_lm) #to see what the names of the my_lm are
+my_lm$coefficients
+
 ```
 
 To complicate things further, some info is stored in _another_ list after applying the `summary` function:
 
 ```{r}
-summary(my_lm) %>% 
+summary(my_lm) %>% #more information about the fitted model.
   names()
 ```
 
 We can use the `predict()` function to make predictions from the model (default is to use fitting/training data). Here are the predictions:
 
 ```{r}
-predict(my_lm) %>% 
-  head()
+#predict(my_lm) %>% 
+ # head() #uses first few loggdppercap of the gapminder dataset.
+
+#gapminder %>% #uses the log(gdpPercap), extracting this as the x value and inputs this into the predict --> it returns the predicted y-value.
+ # head( )
+
+#predict(my_lm, newdata = tibble(gdpPercap = c(500,600,700))) --> you see the resulting y values that it predicts.
+
 ```
 
 We can plot models (with one predictor/ X variable) using `ggplot2` through the `geom_smooth()` layer. Specifying `method="lm"` gives us the linear regression fit (but only visually!):
@@ -110,7 +127,7 @@ We can plot models (with one predictor/ X variable) using `ggplot2` through the 
 ```{r}
 ggplot(gapminder, aes(gdpPercap, lifeExp)) +
     geom_point() +
-    geom_smooth(method="lm") +
+    geom_smooth(method="lm") + #fits the model. wont give you coeffs or numeric results.
     scale_x_log10()
 ```
 
@@ -123,11 +140,14 @@ Let's make it easier to extract info, using the `broom` package. There are three
     - Useful for _interpretation_ task.
 2. `augment`: add columns to the original data frame, giving information corresponding to each row.
     - Useful for _prediction_ task.
-3. `glance`: extract statistical summaries about the model as a whole (1-row tibble).
+3. `glance`: extract statistical summaries about the model as a whole (1-row tibble of summary stats telling you the fit of the model).
     - Useful for checking goodness of fit.
 
 Exercise: apply all three functions to our fitted model, `my_lm`. What do you see?
 
 ```{r}
-
+tidy(my_lm) #returns df with slope, intercept of line. and error of these estimates & p-value corresponding
+augment(my_lm) #binds new columns onto our original DF. can look at fitted vs. actual. and look at the residuals for these.
+augment(my_lm, newdata = tibble(gdpPercap = c(400,500,600))) #note no life exp column here, we still see fitted and std erorr of the fit.
+glance(my_lm) #how well does model fit the data.
 ```
