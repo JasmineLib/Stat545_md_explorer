@@ -188,9 +188,17 @@ mmm2(c(TRUE, TRUE, FALSE, TRUE, TRUE))
 
 ## Naming, and generalizing to quantile difference
 
-Let's generalize the function to take the difference in two quantiles:
+Let's generalize the function to take the difference in two quantiles:  
+- an 0.9 quantile means 90% of time the output will be below that. so we can use this with a random variable. each time you draw a number, there's a 90% chance the draw is less than that quantile number.
+- so we take a higher quantile like 0.9 and subtract another number like 0.1
 
 ```{r}
+#function takes a numeric vector and a vector of probabilities like 0.9 and 0.1.
+#takes estimates of these quantiles.
+
+#returns 0.1 and 0.9 quantiles.
+quantile(rnorm(100), c(0.1, 0.9))
+
 qd <- function(x, probs) {
     stopifnot(is.numeric(x))
     if (length(x) == 0) {
@@ -221,7 +229,9 @@ If we input a vector stored in some variable, need that variable be named `x`?
 Would be nice to have defaults for `probs`, right? Add them to the below code (which is copied and pasted from above):
 
 ```{r}
-qd2 <- function(x, probs) {
+#add probs = c(0,1) as default
+#trying to add an na.rm to be true. 
+qd2 <- function(x, probs = c(0,1), na.rm = na.rm) {
     stopifnot(is.numeric(x))
     if (length(x) == 0) {
         warning("You inputted a length-0 x. Expecting length >=1. Returning NULL.")
@@ -230,6 +240,9 @@ qd2 <- function(x, probs) {
     qvec <- quantile(x, probs)
     max(qvec) - min(qvec)
 }
+#can override default values
+qd2(rnorm(100), probs =c(0.25,0.75))
+qd2(rnorm(100))
 ```
 
 ## NA handling
@@ -237,6 +250,7 @@ qd2 <- function(x, probs) {
 Does this return what we were expecting?
 
 ```{r}
+#vector contains 1:10 followed by an NA. how does qd handle this? throws and error.
 v <- c(1:10, NA)
 qd(v)
 ```
@@ -260,13 +274,24 @@ qd2 <- function(x, probs=c(0,1)) {
 There are other arguments to `quantile`, like `type`, that are not used all that much. Put them in as ellipses:
 
 ```{r}
-qd2 <- function(x, probs=c(0,1), na.rm=FALSE, FILL_THIS_IN) {
+#whatever goes into the function, you just add it into the quantile function. that's what the ellipses does.
+qd2 <- function(x, probs=c(0,1), na.rm=FALSE, ...) {
     stopifnot(is.numeric(x))
     if (length(x) == 0) {
         warning("You inputted a length-0 x. Expecting length >=1. Returning NULL.")
         return(NULL)
     } 
-    qvec <- quantile(x, probs, na.rm = na.rm, FILL_THIS_IN)
+    qvec <- quantile(x, probs, na.rm = na.rm, ...)
     max(qvec) - min(qvec)
 }
+v = rnorm(100)
+qd2(v)
+#returns max - min
+
+#type = 1
+#qd2(v,1) will not input 1 as the type argument in function, it will assume that you mean probs = 1 (so it takes probs(1) - probs(1), which = 0)
+#
+qdv(v, probs = c(0,1) na.rm = TRUE, type = 1)
 ```
+
+
