@@ -1,5 +1,5 @@
 
-#Jasmine's STAT 545 Participation Repo
+# Jasmine's STAT 545 Participation Repo
 
 Links to files generated in class are provided: 
 
