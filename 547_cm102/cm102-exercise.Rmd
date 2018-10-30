@@ -150,6 +150,7 @@ So, you don't want to manually make 12 folders for your participation repo. I he
 
 (If you've already done this, it's still a useful exercise!)
 
+
 ### Make Folders
 
 Let's make those folders!
@@ -157,21 +158,28 @@ Let's make those folders!
 1. Make a character vector with entries `"01"`, `"02"`, ..., `12` with `str_pad()`.
 
 ```{r}
-(num <- str_pad(FILL_THIS_IN))
+(num <- str_pad(1:12, width=2, side="left", pad="0"))
 ```
 
-2. Use `str_c()` to combine `"cm1"` with the numbers:
+2. Use `str_c()` to combine `"/cm1"` with the numbers:
     - If your system uses "\" instead of "/", you might need two backslashes.
 
 ```{r}
-(folders <- str_c(FILL_THIS_IN))
+(folders <- str_c("/cm1", num, sep = ""))
 ```
 
-3. Use `testthat` to check that each entry of `folders` has 5 characters. You might find the base R `all()` function useful.
+3. Use `testthat` to check that each entry of `folders` has 6 characters. You might find the base R `all()` function useful.
 
 ```{r}
-test_that("folder names are length 5.", {
-    expect_FILL_THIS_IN()
+#outputs a vector of trues
+(str_length(folders) == 6)
+
+#are all of them true? Yes. 
+(all(str_length(folders) == 6))    
+
+#use this in combo with testthat function: 
+test_that("folder names are length 6.", {
+    expect_true(all(str_length(folders) == 6))
 })
 ```
 
@@ -179,6 +187,9 @@ test_that("folder names are length 5.", {
     - Note: `dir.create()` requires the full path to be specified. You might find the `here::here()` function useful.
     - This code might work (depending on your directory): `for (folder in folders) dir.create(here::here(folder))`
     - We'll learn how to use `purrr` instead of loops next week.
+```{r}
+for (folder in folders) dir.create(here::here(folder))
+```
 
 ### Make README's
 
@@ -187,14 +198,20 @@ Now, let's seed the folders with README's.
 1. Add `/README.md` to the end of the folder names stored in `folders`:
 
 ```{r}
-files <- FILL_THIS_IN
+(files <- str_c(folders, "/README.md"))
 ```
 
 2. Make a vector of contents to put in each README. Put a title and body. 
     - Hint: Use `\n` to indicate a new line! This works in graphs, too.
     
 ```{r}
-contents <- FILL_THIS_IN
+#specify new line using \n. 
+contents <- str_c("# Participation \n\n Participation for class meeting ", 1:12)
+contents
+
+
+#to see what it would look like for the first entry: 
+cat(contents[1]) #note that it did press enter twice.
 ```
 
 3. BONUS: Write the README's to file using base R's `write(x, file)`:
@@ -202,11 +219,17 @@ contents <- FILL_THIS_IN
     - There's a better alternative to a loop using `purrr`. Next week's topic!
     - This code might not work, depending on your workind directory and system.
 
+```{r}
+for (i in 1:length(files)) 
+  write(contents[i], 
+        files[i])
+```
+
 ## Regular Expressions (aka regex)
 
 Great resource is [r4ds](https://r4ds.had.co.nz/strings.html#matching-patterns-with-regular-expressions)!
 
-Premable:
+Preamble:
 
 - Useful for identifying _patterns_, not exact character specifications.
 - Hard to read and write!
@@ -224,25 +247,28 @@ countries <- levels(gapminder$country)
 Find all countries in the gapminder data set with the following pattern: "i", followed by any single character, followed by "a":
 
 ```{r}
+# "." stands for any single character. for example if we want to look for f.x it will search for things like fax, fbx, fcx, etc.
 str_subset(countries, pattern = "i.a")
 ```
 
 Here, `.` stands for "any single character".
 
-But, where's Italy? Case-sensitive!
+But, where's Italy? Case-sensitive! Regular expressions are case sensitive.
 
 Let's use `str_view_all()` to see the matches:
+nicer because it highlights where it found that pattern in the vector.
 
 ```{r}
 str_view_all(countries, pattern = "i.a")
+#match = true only returns only those countries with a match
 str_view_all(countries, pattern = "i.a", match=TRUE)
 ```
 
 Exercise: Canada isn't the only country with three interspersed "a"'s. Find the others. Try both `str_view_all()` and `str_subset()`.
 
 ```{r}
-str_view_all(FILL_THIS_IN)
-str_subset(FILL_THIS_IN)
+str_view_all(countries, pattern = "a.a.a", match = TRUE)
+str_subset(countries, pattern = "a.a.a")
 ```
 
 
@@ -268,8 +294,12 @@ Why does R require a double escape? It does one level of escaping before "execut
 
 - See `?Quotes`
 - Try searching for "s\. " (without quotes) in this document (don't forget to select "Regex")
+```{r}
+str_view_all_match(countries, pattern = "s\.")
+```
 
 ### Character Classes
+Square brackets match a single character. if we start with ^ it will search for a single character that is anything but these letters.
 
 - `[letters]` matches a single character that's either l, e, t, ..., or s.
 - `[^letters]`: anything _but_ these letters. 
@@ -283,27 +313,40 @@ Note that not all special characters "work" within `[]`, but some do, and do not
 Exercise: Find all countries with three non-vowels next to each other.
 
 ```{r}
-str_view_all_match(countries, pattern = "YOUR_REGEX_HERE")
+#search for all cases where there is a non-vowel. shows capital vowels because of case sensitivity.
+str_view_all_match(countries, pattern = "[^aeiou]")
+
+#three non-vowels next to each other
+str_view_all_match(countries, pattern = "[^aeiouAEIOU][^aeiouAEIOU][^aeiouAEIOU]")
+
 ```
 
 
 ### Or
 
 - Use `|` to denote "or". 
-- "And" is implied otherwise, and has precedence.
+- "And" is implied otherwise, and has precedence. "Or " has low priority
 - Use parentheses to indicate precedence.
 
 Beer or bear?
 
 ```{r}
+#watn to search for all words that have either   b+ a or e+r. 
 c("bear", "beer", "bar") %>% 
     str_view_all_match(pattern = "be(e|a)r")
+
+
+#note the difference of removing parentheses.
+c("bear", "beer", "bar") %>% 
+    str_view_all_match(pattern = "bee|ar")
+
 ```
 
 
 ### Quantifiers/Repetition
 
 The handy ones are:
+can specify how many of each character we want.
 
 - `*` for 0 or more
 - `+` for 1 or more
@@ -314,10 +357,10 @@ See list at https://r4ds.had.co.nz/strings.html#repetition
 Find all countries that have any number of o's (but at least 1) following r:
 
 ```{r}
-str_view_all_match(countries, "re+")
+str_view_all_match(countries, "ro+")
 ```
 
-
+can also search for more than whatever number you want using curly brackets
 Find all countries that have exactly two e's next two each other:
 
 ```{r}
@@ -328,7 +371,11 @@ str_view_all_match(countries, "e{2}")
 Exercise: Find all countries that have either "a" or "e", twice in a row (with a changeover allowed, such as "ae" or "ea"):
 
 ```{r}
-str_view_all_match(countries, pattern="YOUR_REGEX_HERE")
+str_view_all_match(countries, pattern="(e|a)(e|a)")
+
+#another way to do this:
+str_view_all_match(countries, pattern ="(a|e){2}")
+
 ```
 
 
@@ -340,19 +387,25 @@ str_view_all_match(countries, pattern="YOUR_REGEX_HERE")
 Countries that end in "land":
 
 ```{r}
+#countries that end in land:
 str_view_all_match(countries, pattern = "land$")
+
+#if we just search $, it just finds the very end of each line by searching for a character of length 0.
 str_view_all_match(countries, pattern = "$")
 ```
 
 Countries that start with "Ca":
 
 ```{r}
+#note when [^] it means not. when ^ it means at the start of the word.
 str_view_all_match(countries, pattern = "^Ca")
 ```
 
 Countries without a vowel? The word should start with a non-vowel, continue as a non-vowel, and end:
 
 ```{r}
+#returns nothing because there isnt a country that has no vowels in its name.
+#astrisk * means give me 0 or more of the same thing before it. ie 0 or more non-vowels between the start and before the end of the string. ie only non-vowels.
 str_view_all_match(countries, "^[^aeiouAEIOU]*$")
 ```
 
@@ -361,19 +414,25 @@ str_view_all_match(countries, "^[^aeiouAEIOU]*$")
 We can refer to parentheses groups:
 
 ```{r}
+#you match to whatever was resolved in group 1 by using \\1
 str_view_all(c("abad", "abbd"), pattern="(a)(b)\\1")
+
+#resolved to a b, so we want abb using whatever was resolved in group 2 = \\2 (ie a b) so we want abb.
 str_view_all(c("abad", "abbd"), pattern="(a)(b)\\2")
 ```
 
 Note that the parentheses are first resolved, THEN referred to. NOT re-executed.
 
 ```{r}
+#resolves an then it looks for an again. then any number of characters followed by an again. this doesn't exist in bananas.
+#why does it search for an? it looks for anything followed by any thing and it keeps searching until it finds something that meets the next requirements
 str_view_all(c("bananas"), "(.)(.)\\1\\2.*\\1\\2")
 ```
 
 We can refer to them later in the search, too:
 
 ```{r}
+#here we have the same thing again.
 str_view_all(c("bananas", "Who can? Bananas can."), "(.)(.)\\1\\2.*\\1\\2")
 ```
 
