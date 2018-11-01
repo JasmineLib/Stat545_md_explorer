@@ -133,7 +133,9 @@ map2_chr(name, commute, ~ str_c(.x, " takes ", .y, " minutes to get to work."))
 
 ## What are they?
 
-A tibble can hold a list as a column, too:
+A tibble can hold a list as a column, in addition to logical,s numbers, integers, but not dataframes in a tibble. but we can have a list in a tibble too, which we can't do in a dataframe.:
+
+allows more flexible analyses. 
 
 ```{r}
 (listcol_tib <- tibble(
@@ -142,6 +144,11 @@ A tibble can hold a list as a column, too:
   c = list(sum, sqrt, str_c),
   d = list(x=1, y=sum, z=iris)
 ))
+
+#returns structure:
+str(listcol_tib)
+
+#both tibbles and dfs are just lists with a layer around them.
 ```
 
 Printing to screen doesn't reveal the contents! `str()` helps here:
@@ -156,16 +163,28 @@ Extract a list column in the same way as a vector column:
 print(listcol_tib$a)  # Vector
 ```
 ```{r}
+#returns the list in that column
 print(listcol_tib$b)  # List
 ```
 
 This is where `map()` comes in handy! Let's make a tibble using the `got_chars` data, with two columns: "name" and "aliases", where "aliases" is a list-column (remember that each character can have a number of aliases different than 1):
 
-1. Pipe `got_chars` into `{` with `tibble()`.
+1. Pipe `got_chars` (game of thrones characters) into `{` with `tibble()`.
 2. Specify the columns with `purrr` mappings.
 
 ```{r}
-got_alias <- got_chars %>% FILL_THIS_IN
+#see info on the first entry. we are interested in names (vector of length 1) and aliases (vector of unknown length, in htis case len = 4).
+got_chars[[1]]
+
+#make a column for name and in another column containing a list of aliases for each character.
+#require {} to trick the piping operator so it won't put got_chars as the first entry of tibble.
+got_alias <- got_chars %>% {
+  tibble(name = map_chr(., "name"), #use . to refer to everything left of pipe, the got_chars data = list of people. use ,"name" to subset name of list component we want. 
+         aliases = map(.,"aliases")) #can't use map_chr because it requires a vector of length 1, and htisi s not length 1.
+}
+
+
+got_alias
 ```
 
 Write the solution down carefully -- we'll be referring to `got_alias` later. 
