@@ -200,9 +200,10 @@ Approach 1: Without piping
 3. Subset the newly-named list to Melisandre.
 
 ```{r}
-(alias_list <- FILL_THIS_IN)
-names(alias_list) <- FILL_THIS_IN
-SUBSET_HERE
+(alias_list <- got_alias$aliases)
+names(alias_list) <- got_alias$name #assign the name of each of the lists
+alias_list
+alias_list[["Melisandre"]]
 ```
 
 Approach 2: With piping
@@ -211,7 +212,15 @@ Approach 2: With piping
 2. Then, pipe that into a subsetting function to subset Melisandre.
 
 ```{r}
-got_alias %>% FILL_THIS_IN
+got_alias %>% 
+  #. refers to entire got_alias dataframe
+  {setNames(.$aliases, .$name)} %>% 
+  #now we pipe this into the subset function to get Melisandre, which saves us from having to name everything above into a variable, such as x, and then subsetting from that x[["Melisandre"]]
+  `[[`("Melisandre")
+
+
+#another example:
+setNames(letters, LETTERS) #returns a letters vector with a list of lowercase letters with each corresponding name being a capital letter.
 ```
 
 ## Nesting/Unnesting; Operating
@@ -225,6 +234,7 @@ got_alias
 Let's make a tidy data frame! First, let's take a closer look at `tidyr::unnest()` after making a tibble of preferred ice cream flavours:
 
 ```{r}
+#each person has 2 or 3 preferred ice cream flavours in a list column named "flav"
 (icecream <- tibble(
     name = c("Jacob", "Elena", "Mitchell"),
     flav = list(c("strawberry", "chocolate", "lemon"),
@@ -236,6 +246,7 @@ Let's make a tidy data frame! First, let's take a closer look at `tidyr::unnest(
 I can make a tidy data frame _without_ list columns using `tidyr::unnest()`:
 
 ```{r}
+#quick way to make tidy data. unness by flavour
 icecream %>% 
     unnest(flav)
 ```
@@ -245,6 +256,7 @@ How would I subset all people that like strawberry ice cream? We can either use 
 From "normal" tidy data:
 
 ```{r}
+#option 1: make tidy dataframe, then filter.
 icecream %>% 
     unnest(flav) %>% 
     filter(flav == "strawberry")
@@ -253,8 +265,10 @@ icecream %>%
 From list-column data:
 
 ```{r}
+#option 2: operate on the list column itself. returns all people who like strawberry. we are taking the list column and iterating over it using purrr.
+#.x is a vector of icecream flavours, and we want any of those to == strawberry, so we need to use any() rather than just =="strawberry"
 icecream %>% 
-  filter(map_lgl(flav, ~ FILL_THIS_IN))
+  filter(map_lgl(flav, ~ any(.x =="strawberry")))
 ```
 
 
@@ -263,7 +277,14 @@ icecream %>%
 `unnest()` the `got_alias` tibble. Hint: there should be a hiccup. Check out the `str()`ucture of `got_alias` -- are all elements of the list column vectors? Would using `tidyr::drop_na()` be a good idea here?
 
 ```{r}
-FILL_THIS_IN
+str(got_alias)
+#we see null values in  one of them instead of the usual "" empty character vector in most other cases. this won't work with unnest.
+#use drop_na() 
+
+got_alias %>% 
+  drop_na() %>%  #remove null value 
+  unnest() #returns a nice tidy df.
+
 ```
 
 We can also do the opposite with `tidyr::nest()`. Try it with the `iris` data frame:
@@ -272,7 +293,18 @@ We can also do the opposite with `tidyr::nest()`. Try it with the `iris` data fr
 2. `nest()`!
 
 ```{r}
-FILL_THIS_IN
+iris
+
+#for each species we want to take length dimensions and put it into a nested df:
+#group by species
+iris %>%
+  group_by(Species) %>% 
+  nest() #nested the rest into a df and put it as an entry in the list column.
+
+#one application of this list is for running a linear regression model. we can do that for iris --> then run a mutate function that outputs lm result. so list column returns model output.
+
+#another application using list and parallel mapping: sampling from groups with diff sample size for each group?
+#see link below.
 ```
 
 Keep the nested `iris` data frame above going! Keep piping:
